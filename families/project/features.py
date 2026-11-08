@@ -1,4 +1,4 @@
-"""Numeric features for a later Layer 4 pass. Phase 2 only builds the frame."""
+"""Numeric features for Layer 4. Peer group is the department."""
 
 from __future__ import annotations
 
@@ -16,7 +16,14 @@ FEATURE_COLUMNS = [
     "delay_days",
     "invoice_count",
     "spend_budget_ratio",
+    "peer_group",
 ]
+FEATURE_FIELDS = {
+    "financial_physical_gap": "financial_pct",
+    "delay_days": "expected_end_date",
+    "invoice_count": "invoice_no",
+    "spend_budget_ratio": "budget",
+}
 
 
 def build_feature_frame(session: Session, params: dict) -> pd.DataFrame:
@@ -50,6 +57,7 @@ def build_feature_frame(session: Session, params: dict) -> pd.DataFrame:
                 "delay_days": delay,
                 "invoice_count": len(project_invoices),
                 "spend_budget_ratio": None if not project.budget else spend / project.budget,
+                "peer_group": project.department,
             }
         )
     return pd.DataFrame(rows, columns=FEATURE_COLUMNS)

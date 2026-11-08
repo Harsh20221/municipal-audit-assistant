@@ -1,4 +1,4 @@
-"""Run layer 1-3 rules for every enabled family and store findings."""
+"""Run layer 1-3 rules, layer 4 stats, and risk scores for every enabled family."""
 
 from __future__ import annotations
 
@@ -10,10 +10,13 @@ from uuid import uuid4
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
+from core.config import load_settings
 from core.db import AuditLog, FindingRow, init_db, session_factory
 from core.logging import setup_logging
 from core.registry import discover_families
 from engine.finding import Finding, RuleContext
+from engine.layer4_stats import layer4_findings
+from engine.scoring import write_risk_scores
 from families.base import DocumentFamily
 
 logger = logging.getLogger("engine.runner")
@@ -22,9 +25,11 @@ logger = logging.getLogger("engine.runner")
 def run_audit(
     session: Session,
     families: list[DocumentFamily] | None = None,
+    settings=None,
 ) -> list[Finding]:
-    """Replace stored findings for each family, then insert the new set."""
+    """Replace stored findings for each family, then insert rules, layer 4, and risk scores."""
     selected = families if families is not None else discover_families()
+    loaded_settings = settings if settings is not None else load_settings()
     stored: list[Finding] = []
     for family in selected:
         session.execute(delete(FindingRow).where(FindingRow.family == family.name))
@@ -39,6 +44,9 @@ def run_audit(
         for rule in family.rules():
             context.rule = rule
             family_findings.extend(rule.check(context))
+        family_findings.extend(
+            layer4_findings(family, session, loaded_settings.layer4, family_findings)
+        )
         created_at = datetime.now(UTC)
         for item in family_findings:
             item.finding_id = str(uuid4())
@@ -73,6 +81,8 @@ def run_audit(
                 },
             )
         )
+        session.flush()
+        write_risk_scores(session, family, loaded_settings.risk)
         stored.extend(family_findings)
         logger.info("%s findings=%s by_rule=%s", family.name, len(family_findings), dict(counts))
     session.commit()
@@ -87,8 +97,6 @@ def load_findings(session: Session, family: str | None = None) -> list[FindingRo
 
 
 def main() -> None:
-    from core.config import load_settings
-
     settings = load_settings()
     setup_logging(settings.logging_level)
     init_db()

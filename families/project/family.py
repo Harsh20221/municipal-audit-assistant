@@ -6,7 +6,7 @@ from pathlib import Path
 
 from core.config import load_rule_file
 from families.base import DocumentFamily, DocumentTypeSpec, ExtractionResult
-from families.project.features import build_feature_frame
+from families.project.features import FEATURE_FIELDS, build_feature_frame
 from families.project.generator import ProjectGenerator
 from families.project.models import Invoice, ProgressReport, Project, Tender, WorkOrder
 from families.project.rules import registered_rules
@@ -18,6 +18,7 @@ _RULES_PATH = Path(__file__).with_name("rules.yaml")
 class ProjectFamily(DocumentFamily):
     name = "project"
     version = "0.1.0"
+    case_entity_type = "project"
 
     def document_types(self) -> list[DocumentTypeSpec]:
         return [
@@ -67,6 +68,9 @@ class ProjectFamily(DocumentFamily):
 
     def feature_frame(self, session):
         return build_feature_frame(session, self.rule_params()["values"])
+
+    def feature_fields(self) -> dict[str, str]:
+        return dict(FEATURE_FIELDS)
 
     def generator(self) -> ProjectGenerator:
         return ProjectGenerator(self.rule_params())

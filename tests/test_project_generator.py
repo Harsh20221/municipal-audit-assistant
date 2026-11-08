@@ -98,6 +98,7 @@ def test_project_feature_frame_columns(tmp_path):
         "delay_days",
         "invoice_count",
         "spend_budget_ratio",
+        "peer_group",
     ]
     assert len(frame) == 4
     assert frame["invoice_count"].between(3, 8).all()

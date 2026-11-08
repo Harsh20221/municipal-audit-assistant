@@ -58,11 +58,29 @@ class GeneratorSettings:
 
 
 @dataclass(frozen=True)
+class Layer4Settings:
+    z_threshold: float
+    iqr_k: float
+    contamination: float
+    min_peer_group: int
+    random_state: int
+
+
+@dataclass(frozen=True)
+class RiskSettings:
+    weights: dict[str, float]
+    low_below: float
+    high_above: float
+
+
+@dataclass(frozen=True)
 class Settings:
     database_url: str
     enabled_families: list[str]
     logging_level: str
     generator: GeneratorSettings
+    layer4: Layer4Settings
+    risk: RiskSettings
 
 
 def load_settings() -> Settings:
@@ -70,6 +88,8 @@ def load_settings() -> Settings:
     raw = yaml.safe_load(SETTINGS_PATH.read_text(encoding="utf-8"))
     database_url = os.getenv("DATABASE_URL") or raw["database_url"]
     generator = raw["generator"]
+    layer4 = raw["layer4"]
+    risk = raw["risk"]
     return Settings(
         database_url=_resolve_sqlite(database_url),
         enabled_families=list(raw["enabled_families"]),
@@ -79,5 +99,17 @@ def load_settings() -> Settings:
             error_rate=float(generator["error_rate"]),
             hard_negative_rate=float(generator["hard_negative_rate"]),
             counts={str(name): int(count) for name, count in generator["counts"].items()},
+        ),
+        layer4=Layer4Settings(
+            z_threshold=float(layer4["z_threshold"]),
+            iqr_k=float(layer4["iqr_k"]),
+            contamination=float(layer4["contamination"]),
+            min_peer_group=int(layer4["min_peer_group"]),
+            random_state=int(layer4["random_state"]),
+        ),
+        risk=RiskSettings(
+            weights={str(name): float(value) for name, value in risk["weights"].items()},
+            low_below=float(risk["low_below"]),
+            high_above=float(risk["high_above"]),
         ),
     )

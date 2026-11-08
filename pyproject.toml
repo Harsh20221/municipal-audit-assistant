@@ -1,7 +1,7 @@
 [project]
 name = "municipal-audit-assistant"
 version = "0.1.0"
-description = "Municipal Audit Assistant, Phase 1: structured property-tax rules"
+description = "Municipal Audit Assistant, Phase 3: layer 4 stats and risk scores"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -12,6 +12,7 @@ dependencies = [
     "python-dotenv==1.0.1",
     "SQLAlchemy==2.0.36",
     "Faker==33.1.0",
+    "scikit-learn==1.5.2",
 ]
 
 [project.optional-dependencies]
@@ -36,4 +37,4 @@ src = ["core", "families", "engine", "tests"]
 select = ["E", "F", "I", "UP"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["core", "engine", "families"]
+known-first-party = ["core", "engine", "families", "evaluation"]

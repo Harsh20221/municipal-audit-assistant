@@ -1,6 +1,6 @@
-from evaluation.metrics import score_cases
 from tests.conftest import make_session
 
+from evaluation.metrics import score_cases
 from families.project.family import ProjectFamily
 from families.property_tax.family import PropertyTaxFamily
 
@@ -46,10 +46,9 @@ def test_score_cases_counts_false_positives_on_clean_rows():
 def test_quota_corpus_is_not_trivial(tmp_path):
     from collections import defaultdict
 
+    from engine.runner import run_audit
     from evaluation.metrics import score_cases
     from evaluation.score import hits_for_family, load_answer_key
-
-    from engine.runner import run_audit
 
     session = make_session()
     property_family = PropertyTaxFamily()
@@ -74,6 +73,20 @@ def test_quota_corpus_is_not_trivial(tmp_path):
     )
     session.commit()
     run_audit(session, [property_family, project_family])
+    from sqlalchemy import select
+
+    from core.db import FindingRow, RiskScore
+
+    layer4_rows = session.scalars(select(FindingRow).where(FindingRow.layer == 4)).all()
+    assert layer4_rows
+    assert {row.severity for row in layer4_rows} <= {"low", "medium"}
+    property_scores = session.scalars(
+        select(RiskScore).where(RiskScore.family == "property_tax")
+    ).all()
+    project_scores = session.scalars(select(RiskScore).where(RiskScore.family == "project")).all()
+    assert len(property_scores) == 300
+    assert len(project_scores) == 150
+    assert {row.band for row in property_scores + project_scores} <= {"low", "medium", "high"}
     for family, path, minimum in (
         (property_family, tmp_path / "property.csv", 6),
         (project_family, tmp_path / "project.csv", 6),
@@ -108,10 +121,9 @@ def test_quota_corpus_is_not_trivial(tmp_path):
 
 
 def test_small_tier_b_corpora_score_exactly(tmp_path):
+    from engine.runner import run_audit
     from evaluation.metrics import score_cases
     from evaluation.score import hits_for_family, load_answer_key
-
-    from engine.runner import run_audit
 
     session = make_session()
     property_family = PropertyTaxFamily()

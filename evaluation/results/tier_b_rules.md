@@ -7,7 +7,8 @@ families are not averaged together.
 
 Each rule is scored independently, including cases with two or more
 injected errors. needs_layer4 cases obey the rules and are reported as
-expected misses, not as false negatives.
+expected misses, not as false negatives. This table is layers 1-3 only.
+Layer 4 and the ablation table are in tier_b_ablation.md.
 
 ## project
 

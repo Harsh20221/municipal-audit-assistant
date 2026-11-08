@@ -25,7 +25,8 @@ families are not averaged together.
 
 Each rule is scored independently, including cases with two or more
 injected errors. needs_layer4 cases obey the rules and are reported as
-expected misses, not as false negatives.
+expected misses, not as false negatives. This table is layers 1-3 only.
+Layer 4 and the ablation table are in tier_b_ablation.md.
 """
 
 
@@ -38,6 +39,8 @@ def hits_for_family(session: Session, family: DocumentFamily) -> dict[str, set[s
     hits: dict[str, set[str]] = defaultdict(set)
     rows = session.scalars(select(FindingRow).where(FindingRow.family == family.name)).all()
     for finding in rows:
+        if finding.layer >= 4:
+            continue
         case_key = family.case_key_for_finding(session, finding.entity_type, finding.entity_id)
         if case_key is not None:
             hits[finding.rule_id].add(case_key)

@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from core.config import load_rule_file
 from families.base import DocumentFamily, DocumentTypeSpec, ExtractionResult
-from families.property_tax.features import build_feature_frame
+from families.property_tax.features import FEATURE_FIELDS, build_feature_frame
 from families.property_tax.generator import PropertyTaxGenerator
 from families.property_tax.models import Property, TaxAssessment, TaxBill, TaxReceipt
 from families.property_tax.rules import registered_rules
@@ -20,6 +20,7 @@ _RULES_PATH = Path(__file__).with_name("rules.yaml")
 class PropertyTaxFamily(DocumentFamily):
     name = "property_tax"
     version = "0.1.0"
+    case_entity_type = "property"
 
     def document_types(self) -> list[DocumentTypeSpec]:
         return [
@@ -64,6 +65,9 @@ class PropertyTaxFamily(DocumentFamily):
 
     def feature_frame(self, session):
         return build_feature_frame(session, self.rule_params()["values"])
+
+    def feature_fields(self) -> dict[str, str]:
+        return dict(FEATURE_FIELDS)
 
     def generator(self) -> PropertyTaxGenerator:
         return PropertyTaxGenerator(self.rule_params())

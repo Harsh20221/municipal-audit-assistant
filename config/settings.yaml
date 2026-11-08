@@ -10,3 +10,17 @@ generator:
   counts:
     property_tax: 300
     project: 150
+layer4:
+  # Chosen on generator seed 42. Held-out seed 43 is not used to pick these.
+  z_threshold: 5.0
+  iqr_k: 1.5
+  contamination: 0.05
+  min_peer_group: 8
+  random_state: 42
+risk:
+  weights:
+    low: 0.10
+    medium: 0.30
+    high: 0.60
+  low_below: 30
+  high_above: 60

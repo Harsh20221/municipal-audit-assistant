@@ -31,6 +31,7 @@ class ExtractionResult:
 class DocumentFamily(ABC):
     name: str
     version: str
+    case_entity_type: str = "case"
 
     @abstractmethod
     def document_types(self) -> list[DocumentTypeSpec]:
@@ -54,7 +55,11 @@ class DocumentFamily(ABC):
 
     @abstractmethod
     def feature_frame(self, session):
-        """Numeric feature rows for Layer 4. The stats engine arrives in Phase 3."""
+        """Numeric feature rows for Layer 4, including a peer_group column."""
+
+    def feature_fields(self) -> dict[str, str]:
+        """Map a feature name to the source field a rule finding would cite."""
+        return {}
 
     @abstractmethod
     def generator(self):

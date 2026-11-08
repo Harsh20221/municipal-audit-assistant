@@ -117,6 +117,7 @@ def test_feature_frame_has_layer4_columns(tmp_path):
         "built_up_area_sqft",
         "building_age",
         "paid_expected_ratio",
+        "peer_group",
     ]
     assert len(frame) == 3
     assert frame["paid_expected_ratio"].notna().all()

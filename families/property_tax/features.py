@@ -1,4 +1,4 @@
-"""Numeric features for a later Layer 4 pass. Phase 1 only builds the frame."""
+"""Numeric features for Layer 4. Peer group is zone and category."""
 
 from __future__ import annotations
 
@@ -15,7 +15,14 @@ FEATURE_COLUMNS = [
     "built_up_area_sqft",
     "building_age",
     "paid_expected_ratio",
+    "peer_group",
 ]
+FEATURE_FIELDS = {
+    "tax_per_sqft": "amount_due",
+    "built_up_area_sqft": "built_up_area_sqft",
+    "building_age": "construction_year",
+    "paid_expected_ratio": "amount_paid",
+}
 
 
 def build_feature_frame(session: Session, params: dict) -> pd.DataFrame:
@@ -50,6 +57,7 @@ def build_feature_frame(session: Session, params: dict) -> pd.DataFrame:
                 "paid_expected_ratio": (
                     None if amount_paid is None or not expected_due else amount_paid / expected_due
                 ),
+                "peer_group": f"{prop.zone}|{prop.category}",
             }
         )
     return pd.DataFrame(rows, columns=FEATURE_COLUMNS)
