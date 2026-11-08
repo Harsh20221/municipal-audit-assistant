@@ -1,0 +1,43 @@
+version: illustrative-v1
+notes: >
+  ILLUSTRATIVE project thresholds for a student project. They are not an
+  official works manual. Replace them before any real audit use. The as-of
+  date is a fixed synthetic audit date so checks do not depend on the day
+  the program is run. Findings only mark items that require manual verification.
+
+illustrative: &illustrative
+  source_note: "ILLUSTRATIVE placeholder. Not confirmed from an official works manual."
+  source_url: ""
+  effective_from: "2024-04-01"
+
+percent_min:
+  value: 0
+  <<: *illustrative
+
+percent_max:
+  value: 100
+  <<: *illustrative
+
+financial_physical_gap_points:
+  value: 15
+  source_note: "Flag when financial percent exceeds physical percent by more than this many points. ILLUSTRATIVE."
+  source_url: ""
+  effective_from: "2024-04-01"
+
+award_gap_pct:
+  value: 0.20
+  source_note: "Flag when the absolute gap between award value and tender estimate exceeds 20 percent of the estimate. ILLUSTRATIVE."
+  source_url: ""
+  effective_from: "2024-04-01"
+
+amount_tolerance_abs:
+  value: 1.0
+  source_note: "Rupee tolerance for invoice totals against the work order and the budget."
+  source_url: ""
+  effective_from: "2024-04-01"
+
+as_of_date:
+  value: "2025-09-30"
+  source_note: "Fixed synthetic audit date used for the overdue-project check. Not the wall clock."
+  source_url: ""
+  effective_from: "2024-04-01"

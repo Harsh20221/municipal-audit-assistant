@@ -1,0 +1,12 @@
+database_url: sqlite:///data/municipal_audit.db
+enabled_families:
+  - property_tax
+  - project
+logging_level: INFO
+generator:
+  seed: 42
+  error_rate: 0.18
+  hard_negative_rate: 0.08
+  counts:
+    property_tax: 300
+    project: 150

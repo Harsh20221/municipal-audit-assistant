@@ -1,0 +1,109 @@
+version: illustrative-v1
+notes: >
+  ILLUSTRATIVE rulebook for a student project. These rates, zone factors, and
+  age bands are not an official municipal schedule. Replace every value with a
+  verified official source before any real audit use. Findings only mark items
+  that require manual verification.
+
+illustrative: &illustrative
+  source_note: "ILLUSTRATIVE placeholder. Not confirmed from an official schedule."
+  source_url: ""
+  effective_from: "2024-04-01"
+
+third_party_rate: &third_party_rate
+  source_note: "Unverified third-party summary. ILLUSTRATIVE until checked against an official rate circular."
+  source_url: ""
+  effective_from: "2024-04-01"
+
+fiscal_year:
+  value: "2024-25"
+  <<: *illustrative
+
+fiscal_start_year:
+  value: 2024
+  <<: *illustrative
+
+general_rate:
+  value: 0.15
+  <<: *third_party_rate
+
+water_rate:
+  value: 0.125
+  <<: *third_party_rate
+
+sewer_rate:
+  value: 0.03
+  <<: *third_party_rate
+
+construction_factor:
+  value: 1.0
+  source_note: "Flat factor because the V1 field list has no construction type. ILLUSTRATIVE."
+  source_url: ""
+  effective_from: "2024-04-01"
+
+late_penalty:
+  value: 250.0
+  source_note: "Flat illustrative penalty used when a synthetic receipt is paid late. Not an official penalty schedule."
+  source_url: ""
+  effective_from: "2024-04-01"
+
+amount_tolerance_pct:
+  value: 0.02
+  source_note: "Relative tolerance for billed and assessed amounts against the illustrative formula."
+  source_url: ""
+  effective_from: "2024-04-01"
+
+amount_tolerance_abs:
+  value: 1.0
+  source_note: "Absolute rupee tolerance so rounding within one rupee is not flagged."
+  source_url: ""
+  effective_from: "2024-04-01"
+
+monthly_base_rate:
+  A:
+    residential:
+      value: 8.0
+      <<: *illustrative
+    commercial:
+      value: 20.0
+      <<: *illustrative
+  B:
+    residential:
+      value: 5.0
+      <<: *illustrative
+    commercial:
+      value: 12.0
+      <<: *illustrative
+  C:
+    residential:
+      value: 3.0
+      <<: *illustrative
+    commercial:
+      value: 8.0
+      <<: *illustrative
+
+age_factor_bands:
+  - max_age:
+      value: 10
+      <<: *illustrative
+    factor:
+      value: 1.0
+      <<: *illustrative
+  - max_age:
+      value: 25
+      <<: *illustrative
+    factor:
+      value: 0.9
+      <<: *illustrative
+  - max_age:
+      value: 40
+      <<: *illustrative
+    factor:
+      value: 0.8
+      <<: *illustrative
+  - max_age:
+      value: 200
+      <<: *illustrative
+    factor:
+      value: 0.7
+      <<: *illustrative
