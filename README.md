@@ -1,6 +1,6 @@
 # Municipal Audit Assistant
 
-Phase 3 of a student project. It generates synthetic property-tax and project cases, runs deterministic layer 1–3 checks, then peer-group z-score, IQR, and Isolation Forest. It prints Tier B precision and recall per rule and a layer ablation table. It does not read PDFs or call a language model.
+Phase 4 of a student project. It generates synthetic property-tax and project cases, checks them with layers 1–3 and peer-group layer 4, and can also render those same records as digital PDFs and extract the text. It does not run OCR, and it does not call a language model unless you pass `--live`.
 
 Rates in `families/property_tax/rules.yaml` and thresholds in `families/project/rules.yaml` are **ILLUSTRATIVE**. They are not an official schedule. The project “as of” date is fixed in that YAML so overdue checks do not depend on today’s date.
 
@@ -25,6 +25,14 @@ copy .env.example .env
 .\.venv\Scripts\python -m engine.runner
 .\.venv\Scripts\python -m evaluation.score
 .\.venv\Scripts\python -m evaluation.ablation
+.\.venv\Scripts\python -m ingestion.build_pdfs
+.\.venv\Scripts\python -m ingestion.run --limit 5
+```
+
+`--limit` is a case count. The run keeps every PDF for each chosen case and spreads the cases across both families and every answer-key category, using seed 42. A live extraction, with `LLM_PROVIDER` and the matching key set in `.env`:
+
+```powershell
+.\.venv\Scripts\python -m ingestion.run --live --limit 30
 ```
 
 `evaluation.score` reruns the audit and writes `evaluation/results/tier_b_rules.md` (layers 1–3 only). `evaluation.ablation` writes `evaluation/results/tier_b_ablation.md` for seeds 42 and 43. If `make` is installed and `python` is this environment, the targets are `setup`, `generate-data`, `test`, and `evaluate`.
@@ -37,4 +45,6 @@ copy .env.example .env
 - `families/_template/` — commented skeleton, not loaded
 - `engine/` — layer 1–3 rules, layer 4 stats, and risk scores
 - `evaluation/` — Tier B precision, recall, and layer ablation
+- `ingestion/` — digital PDF text, classification, extraction, and PDF rebuilds from the structured rows
+- `core/llm.py` — fake client by default; OpenAI only when `--live` is passed
 - `tests/` — one passing and one failing test per rule

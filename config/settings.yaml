@@ -24,3 +24,12 @@ risk:
     high: 0.60
   low_below: 30
   high_above: 60
+llm:
+  # The ingest script uses the fake client unless --live is passed.
+  provider: fake
+  model: gpt-4o-mini
+  timeout_seconds: 30
+  max_retries: 3
+  cache_dir: data/cache/llm
+  input_cost_per_million: 0.15
+  output_cost_per_million: 0.60

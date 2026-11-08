@@ -1,7 +1,7 @@
 [project]
 name = "municipal-audit-assistant"
 version = "0.1.0"
-description = "Municipal Audit Assistant, Phase 3: layer 4 stats and risk scores"
+description = "Municipal Audit Assistant, Phase 4: digital PDF extraction"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -13,6 +13,9 @@ dependencies = [
     "SQLAlchemy==2.0.36",
     "Faker==33.1.0",
     "scikit-learn==1.5.2",
+    "reportlab==4.2.5",
+    "pymupdf==1.24.14",
+    "openai==1.57.4",
 ]
 
 [project.optional-dependencies]
@@ -22,7 +25,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["core*", "families*", "engine*", "evaluation*"]
+include = ["core*", "families*", "engine*", "evaluation*", "ingestion*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
@@ -31,10 +34,10 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-src = ["core", "families", "engine", "tests"]
+src = ["core", "families", "engine", "evaluation", "ingestion", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["core", "engine", "families", "evaluation"]
+known-first-party = ["core", "engine", "families", "evaluation", "ingestion"]

@@ -13,3 +13,4 @@ data/real/*
 !data/real/.gitkeep
 data/synthetic/*
 !data/synthetic/.gitkeep
+data/cache/

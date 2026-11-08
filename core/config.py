@@ -74,6 +74,17 @@ class RiskSettings:
 
 
 @dataclass(frozen=True)
+class LLMSettings:
+    provider: str
+    model: str
+    timeout_seconds: float
+    max_retries: int
+    cache_dir: Path
+    input_cost_per_million: float
+    output_cost_per_million: float
+
+
+@dataclass(frozen=True)
 class Settings:
     database_url: str
     enabled_families: list[str]
@@ -81,6 +92,7 @@ class Settings:
     generator: GeneratorSettings
     layer4: Layer4Settings
     risk: RiskSettings
+    llm: LLMSettings
 
 
 def load_settings() -> Settings:
@@ -90,6 +102,10 @@ def load_settings() -> Settings:
     generator = raw["generator"]
     layer4 = raw["layer4"]
     risk = raw["risk"]
+    llm = raw.get("llm") or {}
+    cache_dir = Path(os.getenv("LLM_CACHE_DIR") or llm.get("cache_dir", "data/cache/llm"))
+    if not cache_dir.is_absolute():
+        cache_dir = ROOT / cache_dir
     return Settings(
         database_url=_resolve_sqlite(database_url),
         enabled_families=list(raw["enabled_families"]),
@@ -111,5 +127,14 @@ def load_settings() -> Settings:
             weights={str(name): float(value) for name, value in risk["weights"].items()},
             low_below=float(risk["low_below"]),
             high_above=float(risk["high_above"]),
+        ),
+        llm=LLMSettings(
+            provider=os.getenv("LLM_PROVIDER") or str(llm.get("provider", "fake")),
+            model=os.getenv("LLM_MODEL") or str(llm.get("model", "gpt-4o-mini")),
+            timeout_seconds=float(llm.get("timeout_seconds", 30)),
+            max_retries=int(llm.get("max_retries", 3)),
+            cache_dir=cache_dir,
+            input_cost_per_million=float(llm.get("input_cost_per_million", 0.15)),
+            output_cost_per_million=float(llm.get("output_cost_per_million", 0.60)),
         ),
     )

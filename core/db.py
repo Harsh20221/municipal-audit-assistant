@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from sqlalchemy import JSON, DateTime, Float, Integer, String, create_engine, event
+from sqlalchemy import JSON, Boolean, DateTime, Float, Integer, String, create_engine, event, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
@@ -38,6 +38,7 @@ class Extraction(Base):
     field_pages_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     model_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
     validation_errors_json: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    is_scanned: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
 
 
@@ -116,4 +117,15 @@ def init_db(engine: Engine | None = None) -> Engine:
     for family in discover_families():
         family.models()
     Base.metadata.create_all(bound)
+    _ensure_extraction_is_scanned(bound)
     return bound
+
+
+def _ensure_extraction_is_scanned(engine: Engine) -> None:
+    """Add is_scanned on databases created before Phase 4."""
+    with engine.begin() as connection:
+        rows = connection.execute(text("PRAGMA table_info(extractions)")).fetchall()
+        if rows and "is_scanned" not in {row[1] for row in rows}:
+            connection.execute(
+                text("ALTER TABLE extractions ADD COLUMN is_scanned BOOLEAN NOT NULL DEFAULT 0")
+            )

@@ -15,6 +15,9 @@ class TenderFields(BaseModel):
     contractor: str
     tender_estimate: float
     award_value: float
+    budget: float | None = None
+    start_date: date | None = None
+    expected_end_date: date | None = None
 
 
 class WorkOrderFields(BaseModel):

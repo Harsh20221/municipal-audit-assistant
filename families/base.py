@@ -18,14 +18,21 @@ class DocumentTypeSpec:
 
 @dataclass
 class ExtractionResult:
-    """Placeholder for Phase 4 PDF extraction. Phase 1 does not populate it."""
+    """Validated PDF extraction. persist() writes the extraction row and family tables."""
 
-    document_id: int
     doc_type: str
     fields: dict[str, Any]
     field_pages: dict[str, int]
     model_name: str
     validation_errors: list[str]
+    case_id: str = ""
+    document_id: int | None = None
+    filename: str = ""
+    sha256: str = ""
+    page_count: int = 1
+    is_scanned: bool = False
+    status: str = "extracted"
+    accepted: bool = False
 
 
 class DocumentFamily(ABC):
@@ -47,7 +54,11 @@ class DocumentFamily(ABC):
 
     @abstractmethod
     def persist(self, extraction_result: ExtractionResult, session) -> None:
-        """Write an extraction into family tables. PDF path is Phase 4."""
+        """Write the extraction row and the family tables."""
+
+    def clear_case(self, session, case_id: str) -> None:
+        """Remove one case so a PDF ingest can replace the structured rows."""
+        return None
 
     @abstractmethod
     def rules(self) -> list:

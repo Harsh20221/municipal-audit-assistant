@@ -36,6 +36,12 @@ class TaxBillFields(BaseModel):
     penalty: float
     issue_date: date
     due_date: date
+    address: str | None = None
+    ward: str | None = None
+    zone: str | None = None
+    category: Literal["residential", "commercial"] | None = None
+    built_up_area_sqft: float | None = None
+    construction_year: int | None = None
 
 
 class ReceiptFields(BaseModel):
@@ -45,3 +51,9 @@ class ReceiptFields(BaseModel):
     receipt_id: str
     amount_paid: float
     paid_date: date
+    address: str | None = None
+    ward: str | None = None
+    zone: str | None = None
+    category: Literal["residential", "commercial"] | None = None
+    built_up_area_sqft: float | None = None
+    construction_year: int | None = None

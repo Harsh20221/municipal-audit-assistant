@@ -11,6 +11,7 @@ from families.base import DocumentFamily, DocumentTypeSpec, ExtractionResult
 from families.property_tax.features import FEATURE_FIELDS, build_feature_frame
 from families.property_tax.generator import PropertyTaxGenerator
 from families.property_tax.models import Property, TaxAssessment, TaxBill, TaxReceipt
+from families.property_tax.persist import clear_case, persist_property
 from families.property_tax.rules import registered_rules
 from families.property_tax.schemas import AssessmentFields, ReceiptFields, TaxBillFields
 
@@ -55,10 +56,10 @@ class PropertyTaxFamily(DocumentFamily):
         return [Property, TaxAssessment, TaxBill, TaxReceipt]
 
     def persist(self, extraction_result: ExtractionResult, session) -> None:
-        raise NotImplementedError(
-            "Saving extracted PDF fields is Phase 4. "
-            "Phase 1 writes rows through the structured generator."
-        )
+        persist_property(extraction_result, session)
+
+    def clear_case(self, session, case_id: str) -> None:
+        clear_case(session, case_id)
 
     def rules(self) -> list:
         return registered_rules()

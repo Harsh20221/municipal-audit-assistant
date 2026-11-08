@@ -9,6 +9,7 @@ from families.base import DocumentFamily, DocumentTypeSpec, ExtractionResult
 from families.project.features import FEATURE_FIELDS, build_feature_frame
 from families.project.generator import ProjectGenerator
 from families.project.models import Invoice, ProgressReport, Project, Tender, WorkOrder
+from families.project.persist import clear_case, persist_project
 from families.project.rules import registered_rules
 from families.project.schemas import InvoiceFields, ProgressFields, TenderFields, WorkOrderFields
 
@@ -58,10 +59,10 @@ class ProjectFamily(DocumentFamily):
         return [Project, Tender, WorkOrder, Invoice, ProgressReport]
 
     def persist(self, extraction_result: ExtractionResult, session) -> None:
-        raise NotImplementedError(
-            "Saving extracted PDF fields is Phase 4. "
-            "Phase 2 writes rows through the structured generator."
-        )
+        persist_project(extraction_result, session)
+
+    def clear_case(self, session, case_id: str) -> None:
+        clear_case(session, case_id)
 
     def rules(self) -> list:
         return registered_rules()
