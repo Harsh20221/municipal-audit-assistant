@@ -13,6 +13,17 @@ from families.property_tax.models import Property, TaxAssessment, TaxBill, TaxRe
 
 _RULES: list[Rule] = []
 BANNED_WORDS = ("fraud", "corruption", "illegal")
+REQUIRES = {
+    "PT-001": ("assessment_form", "tax_bill", "payment_receipt"),
+    "PT-002": ("assessment_form", "tax_bill", "payment_receipt"),
+    "PT-003": ("tax_bill",),
+    "PT-004": ("assessment_form", "tax_bill"),
+    "PT-005": ("assessment_form",),
+    "PT-006": ("tax_bill", "payment_receipt"),
+    "PT-007": ("assessment_form", "tax_bill", "payment_receipt"),
+    "PT-008": ("tax_bill", "payment_receipt"),
+    "PT-009": ("assessment_form", "tax_bill"),
+}
 
 
 def rule(rule_id: str, layer: int, severity: str, description: str):
@@ -31,6 +42,7 @@ def rule(rule_id: str, layer: int, severity: str, description: str):
             severity=severity,
             description=description,
             check=fn,
+            requires_doc_types=REQUIRES[rule_id],
         )
         _RULES[:] = [existing for existing in _RULES if existing.rule_id != rule_id]
         _RULES.append(item)

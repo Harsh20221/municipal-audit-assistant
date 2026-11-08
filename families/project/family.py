@@ -23,27 +23,85 @@ class ProjectFamily(DocumentFamily):
 
     def document_types(self) -> list[DocumentTypeSpec]:
         return [
-            DocumentTypeSpec(
+            _slot(
                 "tender_award_notice",
                 ("tender", "award notice", "tender estimate"),
                 TenderFields,
+                label="Tender and award notice",
+                description=(
+                    "One notice for the project. It records the estimate, award, "
+                    "budget, contractor, and schedule."
+                ),
+                key_fields=(
+                    "Project ID",
+                    "Contractor",
+                    "Tender estimate",
+                    "Award value",
+                    "Budget",
+                    "Start date",
+                    "Expected end date",
+                ),
+                needed_for=(
+                    "PR-002 end date before the start date",
+                    "PR-008 overdue and incomplete",
+                    "PR-009 spend above budget",
+                    "PR-010 award far from the estimate",
+                    "PR-011 vendor differs from the contractor",
+                ),
+                what_to_look_for=(
+                    "Project ID, contractor, estimate, award value, budget, and both dates."
+                ),
             ),
-            DocumentTypeSpec(
+            _slot(
                 "work_order",
                 ("work order", "work-order"),
                 WorkOrderFields,
+                label="Work order",
+                description="One work order stating the contractor, value, and order date.",
+                key_fields=("Project ID", "Contractor", "Work order value", "Work order date"),
+                needed_for=(
+                    "PR-003 negative amounts",
+                    "PR-004 invoices above the work order",
+                    "PR-005 invoice dated before the work order",
+                ),
+                what_to_look_for="Work order value and work order date.",
             ),
-            DocumentTypeSpec(
+            _slot(
                 "invoice",
                 ("invoice", "tax invoice", "bill for work"),
                 InvoiceFields,
+                label="Invoice",
+                description="One or more invoices. A project can have several.",
+                allow_multiple=True,
+                key_fields=("Project ID", "Invoice number", "Vendor", "Amount", "Invoice date"),
+                needed_for=(
+                    "PR-004 invoices above the work order",
+                    "PR-005 invoice dated before the work order",
+                    "PR-006 duplicated invoice number",
+                    "PR-009 spend above budget",
+                    "PR-011 vendor differs from the contractor",
+                ),
+                what_to_look_for="Invoice number, vendor, amount, and invoice date.",
             ),
-            DocumentTypeSpec(
+            _slot(
                 "progress_report",
                 ("progress report", "physical progress", "financial progress"),
                 ProgressFields,
+                label="Progress report",
+                description="One report per month, with physical and financial percent.",
+                allow_multiple=True,
+                key_fields=("Project ID", "Report month", "Physical percent", "Financial percent"),
+                needed_for=(
+                    "PR-001 percent outside 0 to 100",
+                    "PR-007 financial percent far above physical percent",
+                    "PR-008 overdue and incomplete",
+                ),
+                what_to_look_for="Report month, physical percent, and financial percent.",
             ),
         ]
+
+    def case_id_field(self) -> str:
+        return "project_id"
 
     def extraction_prompt(self, doc_type: str) -> str:
         spec = next(item for item in self.document_types() if item.name == doc_type)
@@ -92,3 +150,18 @@ class ProjectFamily(DocumentFamily):
             return entity_id
         row = session.get(model, int(entity_id))
         return None if row is None else row.project_id
+
+
+def _slot(name, keywords, schema, **kwargs) -> DocumentTypeSpec:
+    if "key_fields" in kwargs:
+        kwargs["key_fields_it_must_contain"] = kwargs.pop("key_fields")
+    return DocumentTypeSpec(
+        name,
+        keywords,
+        schema,
+        sample_pdf_path=f"data/samples/project/{name}.pdf",
+        accepted_formats=("digital PDF",),
+        required=True,
+        allow_multiple=kwargs.pop("allow_multiple", False),
+        **kwargs,
+    )

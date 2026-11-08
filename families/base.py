@@ -14,6 +14,15 @@ class DocumentTypeSpec:
     name: str
     keywords: tuple[str, ...]
     schema: type[BaseModel]
+    label: str = ""
+    description: str = ""
+    required: bool = True
+    allow_multiple: bool = False
+    accepted_formats: tuple[str, ...] = ("digital PDF",)
+    key_fields_it_must_contain: tuple[str, ...] = ()
+    needed_for: tuple[str, ...] = ()
+    sample_pdf_path: str = ""
+    what_to_look_for: str = ""
 
 
 @dataclass
@@ -83,6 +92,38 @@ class DocumentFamily(ABC):
         findings point at child rows override this.
         """
         return entity_id
+
+    def case_id_field(self) -> str:
+        """Extracted field that identifies the case, such as a property or project id."""
+        return "case_id"
+
+    def requirements(self) -> dict:
+        """Document slots and the checks they enable. API and UI read this from the registry."""
+        return {
+            "family": self.name,
+            "documents": [
+                {
+                    "name": spec.name,
+                    "label": spec.label,
+                    "description": spec.description,
+                    "required": spec.required,
+                    "allow_multiple": spec.allow_multiple,
+                    "accepted_formats": list(spec.accepted_formats),
+                    "key_fields_it_must_contain": list(spec.key_fields_it_must_contain),
+                    "needed_for": list(spec.needed_for),
+                    "sample_pdf_path": spec.sample_pdf_path,
+                    "what_to_look_for": spec.what_to_look_for,
+                }
+                for spec in self.document_types()
+            ],
+            "rules": [
+                {
+                    "rule_id": rule.rule_id,
+                    "requires_doc_types": list(rule.requires_doc_types),
+                }
+                for rule in self.rules()
+            ],
+        }
 
     def rule_params(self) -> dict:
         return {"version": self.version, "notes": "", "values": {}}

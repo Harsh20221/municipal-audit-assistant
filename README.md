@@ -1,6 +1,6 @@
 # Municipal Audit Assistant
 
-Phase 4 of a student project. It generates synthetic property-tax and project cases, checks them with layers 1–3 and peer-group layer 4, and can also render those same records as digital PDFs and extract the text. It does not run OCR, and it does not call a language model unless you pass `--live`.
+Phase 5 of a student project. It generates synthetic property-tax and project cases, checks them with layers 1–3 and peer-group layer 4, extracts digital PDFs, and can explain a finding that was already computed. It does not run OCR, and it does not call a language model unless you pass `--live`.
 
 Rates in `families/property_tax/rules.yaml` and thresholds in `families/project/rules.yaml` are **ILLUSTRATIVE**. They are not an official schedule. The project “as of” date is fixed in that YAML so overdue checks do not depend on today’s date.
 
@@ -35,7 +35,20 @@ copy .env.example .env
 .\.venv\Scripts\python -m ingestion.run --live --limit 30
 ```
 
-`evaluation.score` reruns the audit and writes `evaluation/results/tier_b_rules.md` (layers 1–3 only). `evaluation.ablation` writes `evaluation/results/tier_b_ablation.md` for seeds 42 and 43. If `make` is installed and `python` is this environment, the targets are `setup`, `generate-data`, `test`, and `evaluate`.
+`evaluation.score` reruns the audit and writes `evaluation/results/tier_b_rules.md` (layers 1–3 only). `evaluation.ablation` writes `evaluation/results/tier_b_ablation.md` for seeds 42 and 43.
+
+Phase 5 commands:
+
+```powershell
+.\.venv\Scripts\python -m ingestion.build_samples
+.\.venv\Scripts\python -m evaluation.extraction_report --limit 30
+.\.venv\Scripts\python -m evaluation.extraction_report --live --limit 30
+.\.venv\Scripts\python -m evaluation.explain_eval
+.\.venv\Scripts\python -m evaluation.explain_eval --live
+.\.venv\Scripts\python -m evaluation.tier_a
+```
+
+Tier B and Tier A are written to different files and are not averaged. Hand labels go in `data/gold/gold_labels.csv`. Register a public PDF with `python -m data_sources.register_document`. If `make` is installed and `python` is this environment, the targets are `setup`, `generate-data`, `test`, and `evaluate`.
 
 ## Layout
 
@@ -44,7 +57,9 @@ copy .env.example .env
 - `families/project/` — tender, work order, invoice, progress report
 - `families/_template/` — commented skeleton, not loaded
 - `engine/` — layer 1–3 rules, layer 4 stats, and risk scores
-- `evaluation/` — Tier B precision, recall, and layer ablation
-- `ingestion/` — digital PDF text, classification, extraction, and PDF rebuilds from the structured rows
-- `core/llm.py` — fake client by default; OpenAI only when `--live` is passed
+- `evaluation/` — Tier B precision, recall, ablation, and extraction accuracy; Tier A is a separate report
+- `ingestion/` — digital PDF text, classification, extraction, bundle checks, and sample PDFs
+- `explain/` — short finding explanations with a number guardrail
+- `data_sources/` — public-document register for Tier A
+- `core/llm.py` — fake client by default; a live provider only when `--live` is passed
 - `tests/` — one passing and one failing test per rule

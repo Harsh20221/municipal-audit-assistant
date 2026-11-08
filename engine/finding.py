@@ -52,6 +52,7 @@ class Rule:
     severity: str
     description: str
     check: Callable[[RuleContext], list[Finding]]
+    requires_doc_types: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if self.layer not in (1, 2, 3, 4):

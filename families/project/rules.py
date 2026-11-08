@@ -14,6 +14,19 @@ from families.project.models import Invoice, ProgressReport, Project, Tender, Wo
 
 _RULES: list[Rule] = []
 BANNED_WORDS = ("fraud", "corruption", "illegal")
+REQUIRES = {
+    "PR-001": ("progress_report",),
+    "PR-002": ("tender_award_notice",),
+    "PR-003": ("tender_award_notice", "work_order", "invoice"),
+    "PR-004": ("work_order", "invoice"),
+    "PR-005": ("work_order", "invoice"),
+    "PR-006": ("invoice",),
+    "PR-007": ("progress_report",),
+    "PR-008": ("tender_award_notice", "progress_report"),
+    "PR-009": ("tender_award_notice", "invoice"),
+    "PR-010": ("tender_award_notice",),
+    "PR-011": ("tender_award_notice", "invoice"),
+}
 
 
 def rule(rule_id: str, layer: int, severity: str, description: str):
@@ -32,6 +45,7 @@ def rule(rule_id: str, layer: int, severity: str, description: str):
             severity=severity,
             description=description,
             check=fn,
+            requires_doc_types=REQUIRES[rule_id],
         )
         _RULES[:] = [existing for existing in _RULES if existing.rule_id != rule_id]
         _RULES.append(item)

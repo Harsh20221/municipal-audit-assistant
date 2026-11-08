@@ -25,22 +25,92 @@ class PropertyTaxFamily(DocumentFamily):
 
     def document_types(self) -> list[DocumentTypeSpec]:
         return [
-            DocumentTypeSpec(
+            _slot(
                 "assessment_form",
                 ("property tax assessment", "assessment form", "assessed tax"),
                 AssessmentFields,
+                label="Assessment form",
+                description=(
+                    "One assessment for a property and fiscal year. "
+                    "It records the area, zone, category, and assessed tax."
+                ),
+                key_fields=(
+                    "Property ID",
+                    "Owner name",
+                    "Zone",
+                    "Category",
+                    "Built-up area",
+                    "Construction year",
+                    "Fiscal year",
+                    "Assessed tax",
+                    "Exemption amount",
+                ),
+                needed_for=(
+                    "PT-001 negative amounts",
+                    "PT-002 missing identity",
+                    "PT-004 billed amount",
+                    "PT-005 assessed tax",
+                    "PT-007 identity match across documents",
+                    "PT-009 exemption support",
+                ),
+                what_to_look_for=(
+                    "Zone, category, built-up area, and construction year. "
+                    "The tax formula reads those fields."
+                ),
             ),
-            DocumentTypeSpec(
+            _slot(
                 "tax_bill",
                 ("property tax bill", "tax bill", "amount due"),
                 TaxBillFields,
+                label="Tax bill",
+                description="One bill for the same property and fiscal year, with the amount due.",
+                key_fields=(
+                    "Property ID",
+                    "Owner name",
+                    "Fiscal year",
+                    "Assessed tax",
+                    "Exemption amount",
+                    "Penalty",
+                    "Amount due",
+                    "Issue date",
+                    "Due date",
+                ),
+                needed_for=(
+                    "PT-003 due date before issue date",
+                    "PT-004 billed amount",
+                    "PT-006 receipt matches the bill",
+                    "PT-008 late payment without a penalty",
+                    "PT-009 exemption support",
+                ),
+                what_to_look_for="Amount due, issue date, due date, exemption, and penalty.",
             ),
-            DocumentTypeSpec(
+            _slot(
                 "payment_receipt",
                 ("payment receipt", "amount paid", "receipt no"),
                 ReceiptFields,
+                label="Payment receipt",
+                description="One receipt for the amount paid against that bill.",
+                key_fields=(
+                    "Property ID",
+                    "Owner name",
+                    "Fiscal year",
+                    "Receipt number",
+                    "Amount paid",
+                    "Paid date",
+                ),
+                needed_for=(
+                    "PT-001 negative amounts",
+                    "PT-006 receipt matches the bill",
+                    "PT-008 late payment without a penalty",
+                ),
+                what_to_look_for=(
+                    "Amount paid, paid date, and the property ID printed on the receipt."
+                ),
             ),
         ]
+
+    def case_id_field(self) -> str:
+        return "property_id"
 
     def extraction_prompt(self, doc_type: str) -> str:
         spec = next(item for item in self.document_types() if item.name == doc_type)
@@ -88,3 +158,18 @@ class PropertyTaxFamily(DocumentFamily):
 
     def rule_params(self) -> dict:
         return load_rule_file(_RULES_PATH)
+
+
+def _slot(name, keywords, schema, **kwargs) -> DocumentTypeSpec:
+    if "key_fields" in kwargs:
+        kwargs["key_fields_it_must_contain"] = kwargs.pop("key_fields")
+    return DocumentTypeSpec(
+        name,
+        keywords,
+        schema,
+        sample_pdf_path=f"data/samples/property_tax/{name}.pdf",
+        accepted_formats=("digital PDF",),
+        required=True,
+        allow_multiple=False,
+        **kwargs,
+    )
