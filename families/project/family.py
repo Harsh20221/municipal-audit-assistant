@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from sqlalchemy import select
+
 from core.config import load_rule_file
 from families.base import DocumentFamily, DocumentTypeSpec, ExtractionResult
 from families.project.features import FEATURE_FIELDS, build_feature_frame
@@ -19,6 +21,9 @@ _RULES_PATH = Path(__file__).with_name("rules.yaml")
 class ProjectFamily(DocumentFamily):
     name = "project"
     version = "0.1.0"
+    description = (
+        "Compare a tender, work order, invoices, and progress reports for one works project."
+    )
     case_entity_type = "project"
 
     def document_types(self) -> list[DocumentTypeSpec]:
@@ -102,6 +107,40 @@ class ProjectFamily(DocumentFamily):
 
     def case_id_field(self) -> str:
         return "project_id"
+
+    def provides_portfolio(self) -> bool:
+        return True
+
+    def portfolio(self, session) -> dict | None:
+        projects = session.scalars(select(Project).order_by(Project.project_id)).all()
+        reports: dict[str, list[ProgressReport]] = {}
+        for row in session.scalars(select(ProgressReport).order_by(ProgressReport.id)).all():
+            reports.setdefault(row.project_id, []).append(row)
+        points = []
+        for project in projects:
+            series = reports.get(project.project_id) or []
+            if not series:
+                continue
+            latest = max(series, key=lambda item: item.report_month)
+            if latest.physical_pct is None or latest.financial_pct is None:
+                continue
+            points.append(
+                {
+                    "case_id": project.project_id,
+                    "label": project.name,
+                    "physical_pct": latest.physical_pct,
+                    "financial_pct": latest.financial_pct,
+                }
+            )
+        return {
+            "x_label": "Physical progress (%)",
+            "y_label": "Financial progress (%)",
+            "note": (
+                "Each point is the latest progress report for a project. "
+                "It requires manual verification."
+            ),
+            "points": points,
+        }
 
     def extraction_prompt(self, doc_type: str) -> str:
         spec = next(item for item in self.document_types() if item.name == doc_type)

@@ -1,6 +1,6 @@
 # Municipal Audit Assistant
 
-Phase 5 of a student project. It generates synthetic property-tax and project cases, checks them with layers 1–3 and peer-group layer 4, extracts digital PDFs, and can explain a finding that was already computed. It does not run OCR, and it does not call a language model unless you pass `--live`.
+Phase 6 of a student project. It generates synthetic property-tax and project cases, checks them with layers 1–3 and peer-group layer 4, extracts digital PDFs, explains a finding that was already computed, and serves a small API plus a guided upload dashboard. It does not run OCR, and the API calls a language model only when `LLM_PROVIDER` is `groq` or `openai`.
 
 Rates in `families/property_tax/rules.yaml` and thresholds in `families/project/rules.yaml` are **ILLUSTRATIVE**. They are not an official schedule. The project “as of” date is fixed in that YAML so overdue checks do not depend on today’s date.
 
@@ -50,6 +50,15 @@ Phase 5 commands:
 
 Tier B and Tier A are written to different files and are not averaged. Hand labels go in `data/gold/gold_labels.csv`. Register a public PDF with `python -m data_sources.register_document`. If `make` is installed and `python` is this environment, the targets are `setup`, `generate-data`, `test`, and `evaluate`.
 
+The API and dashboard, in two terminals:
+
+```powershell
+.\.venv\Scripts\python -m uvicorn api.main:app --port 8000
+.\.venv\Scripts\python -m streamlit run dashboard/app.py
+```
+
+Open the address Streamlit prints. It calls `http://127.0.0.1:8000` unless `DASHBOARD_API_URL` is set. `LLM_PROVIDER=fake` keeps extraction on the deterministic reader. `groq` or `openai` sends document text to that provider.
+
 ## Layout
 
 - `core/` — settings, SQLite, family registry
@@ -61,5 +70,8 @@ Tier B and Tier A are written to different files and are not averaged. Hand labe
 - `ingestion/` — digital PDF text, classification, extraction, bundle checks, and sample PDFs
 - `explain/` — short finding explanations with a number guardrail
 - `data_sources/` — public-document register for Tier A
+- `api/` — FastAPI routes under `/api/v1`
+- `dashboard/` — Streamlit guided upload
+- `docs/DATA_SOURCES.md` — public portals for example documents
 - `core/llm.py` — fake client by default; a live provider only when `--live` is passed
 - `tests/` — one passing and one failing test per rule

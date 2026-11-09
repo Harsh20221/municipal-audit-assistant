@@ -21,6 +21,7 @@ _RULES_PATH = Path(__file__).with_name("rules.yaml")
 class PropertyTaxFamily(DocumentFamily):
     name = "property_tax"
     version = "0.1.0"
+    description = "Compare an assessment, a bill, and a receipt with the illustrative tax formula."
     case_entity_type = "property"
 
     def document_types(self) -> list[DocumentTypeSpec]:

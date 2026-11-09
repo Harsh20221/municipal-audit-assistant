@@ -47,6 +47,7 @@ class ExtractionResult:
 class DocumentFamily(ABC):
     name: str
     version: str
+    description: str = ""
     case_entity_type: str = "case"
 
     @abstractmethod
@@ -92,6 +93,13 @@ class DocumentFamily(ABC):
         findings point at child rows override this.
         """
         return entity_id
+
+    def provides_portfolio(self) -> bool:
+        """True when this family can plot a case-level progress comparison."""
+        return False
+
+    def portfolio(self, session) -> dict | None:
+        return None
 
     def case_id_field(self) -> str:
         """Extracted field that identifies the case, such as a property or project id."""

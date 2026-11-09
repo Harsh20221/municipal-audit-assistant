@@ -1,7 +1,7 @@
 [project]
 name = "municipal-audit-assistant"
 version = "0.1.0"
-description = "Municipal Audit Assistant, Phase 5: requirements, bundle checks, explanations"
+description = "Municipal Audit Assistant, Phase 6: API and guided upload"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -16,6 +16,10 @@ dependencies = [
     "reportlab==4.2.5",
     "pymupdf==1.24.14",
     "openai==1.57.4",
+    "fastapi==0.115.6",
+    "uvicorn==0.34.0",
+    "python-multipart==0.0.20",
+    "streamlit==1.41.1",
 ]
 
 [project.optional-dependencies]
@@ -25,7 +29,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["core*", "families*", "engine*", "evaluation*", "ingestion*", "explain*", "data_sources*"]
+include = ["core*", "families*", "engine*", "evaluation*", "ingestion*", "explain*", "data_sources*", "api*", "dashboard*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
@@ -34,10 +38,10 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-src = ["core", "families", "engine", "evaluation", "ingestion", "explain", "data_sources", "tests"]
+src = ["core", "families", "engine", "evaluation", "ingestion", "explain", "data_sources", "api", "dashboard", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["core", "engine", "families", "evaluation", "ingestion", "explain", "data_sources"]
+known-first-party = ["core", "engine", "families", "evaluation", "ingestion", "explain", "data_sources", "api", "dashboard"]
